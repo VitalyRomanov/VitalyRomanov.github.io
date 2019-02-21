@@ -4,7 +4,7 @@ title: "Information Theoretic Approach to Classification"
 date: "2018-10-10"
 description: "Logistic regression is the simplest form of classification. We all know that the cost function is the cross entropy loss. But why?"
 category:
-  - Machine Learning
+  - math-and-basics
 tags:
   - classification
 mathjax: true
