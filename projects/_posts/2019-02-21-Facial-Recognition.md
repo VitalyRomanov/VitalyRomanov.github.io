@@ -23,9 +23,9 @@ $$
 \hat{c} = \underset{c\in C}{\operatorname{argmax}}R(x, c) 
 $$
 
-where $C$ is a set of all classes, $x$ is the current data sample and $R$ is a ranking function (the greater $R$ the more our confidence that $x$ belongs to $c$).
+where $$C$$ is a set of all classes, $$x$$ is the current data sample and $$R$$ is a ranking function (the greater $$R$$ the more our confidence that $$x$$ belongs to $$c$$).
 
-Unconstrained classification problems should have a different way of making a decision since the set $C$ is not completely defined.
+Unconstrained classification problems should have a different way of making a decision since the set $$C$$ is not completely defined.
 
 The possible solution to this problem is to define a continuous space and dedicate different region of this space to specific classes. This way, the new classes can be added on the fly, since all we need is to decide what a particular region of space represents. As you can guess this approach is related to the problems of clustering and nearest neighbor search
 
@@ -39,20 +39,20 @@ $$
 \end{equation}
 $$
 
-where T is the similarity threshold. The meaning of this classification rule is similar to the first one, except we leave ourselves the opportunity to refuse to assign any class, in case our confidence level is not sufficient. We make this decision by requiring the correct class to have similarity of at least $T$. Algorithmically, we simply need to find argmax, and then check that similarity for this class satisfies the threshold.
+where T is the similarity threshold. The meaning of this classification rule is similar to the first one, except we leave ourselves the opportunity to refuse to assign any class, in case our confidence level is not sufficient. We make this decision by requiring the correct class to have similarity of at least $$T$$. Algorithmically, we simply need to find argmax, and then check that similarity for this class satisfies the threshold.
 
 ## Triplet Loss (Margin Loss)
 
 > An embedding is a representation of a topological object, manifold, graph, field, etc. in a certain space in such a way that its connectivity or algebraic properties are preserved. For example, a field embedding preserves the algebraic structure of plus and times, an embedding of a topological space preserves open sets, and a graph embedding preserves connectivity.
 > *Source: [Wolfram](http://mathworld.wolfram.com/Embedding.html)*
 
-For the task of face classification, we want to find an embedding of a face that captures special facial properties so that it is easy to tell different faces apart by looking at some similarity measure. In other words, we want an embedding function $f$ that projects an image $x$ into the embeddings space, where different faces are at least as far from each other as the threshold value $T$. Since it is hard to come up with such a function $f$, we try to learn it. The only thing we care about is the interpretation of the distance between embeddings, and this will be the only criteria that we enforce using the optimization loss. Given an image, we call it an anchor, we want to minimize the distance between other images of the same face, call it positive examples, and we want to maximize the difference with other faces. Formally
+For the task of face classification, we want to find an embedding of a face that captures special facial properties so that it is easy to tell different faces apart by looking at some similarity measure. In other words, we want an embedding function $$f$$ that projects an image $$x$$ into the embeddings space, where different faces are at least as far from each other as the threshold value $$T$$. Since it is hard to come up with such a function $$f$$, we try to learn it. The only thing we care about is the interpretation of the distance between embeddings, and this will be the only criteria that we enforce using the optimization loss. Given an image, we call it an anchor, we want to minimize the distance between other images of the same face, call it positive examples, and we want to maximize the difference with other faces. Formally
 
 $$
 ||f(anc) - f(pos)||^2 + \alpha \leq ||f(anc) - f(neg)||^2
 $$
 
-where $anc$ is the anchor image, $pos$ and $neg$ are positive and negative images correspondingly. If we remember the notion of similarity function $R$ from the previous section, for this loss it is defined as follows
+where $$anc$$ is the anchor image, $$pos$$ and $$neg$$ are positive and negative images correspondingly. If we remember the notion of similarity function $$R$$ from the previous section, for this loss it is defined as follows
 
 $$
 R(x, c) = - ||f(c) - f(x)||^2
@@ -65,7 +65,7 @@ $$
 loss = \frac{1}{N} \sum_{i=1}^N \left[||f(anc_i) - f(pos_i)||^2 + \alpha - ||f(anc_i) - f(neg_i)||^2 \right]_{+}
 $$
 
-Here, we make sure that there is a penalty as long as there are negative samples that are closer to the anchor than the margin value $\alpha$. The operator $[x]_+$ is equivalent to `max(0, x)`.
+Here, we make sure that there is a penalty as long as there are negative samples that are closer to the anchor than the margin value $$\alpha$$. The operator $$[x]_+$$ is equivalent to `max(0, x)`.
 
 ## Architecture
 
@@ -108,7 +108,7 @@ Remember that for each minibatch you have a batch of anchor images and batches c
 ![](https://www.oreilly.com/library/view/tensorflow-1x-deep/9781788293594/assets/15b0d10f-3abe-4254-87dd-e3cb5ad93494.png =400x)
 *Source: [Orelly](https://www.oreilly.com/library/view/tensorflow-1x-deep/9781788293594/b109c39d-4c68-45e1-90de-c9c307498783.xhtml)*
 
-As you can see in the picture above, the data $X_1$ and $X_2$ follow through different networks, but weights are shared. 
+As you can see in the picture above, the data $$X_1$$ and $$X_2$$ follow through different networks, but weights are shared. 
 
 ```
 input_1 = tf.placeholder(tf.float32, [None, 100])
@@ -145,9 +145,9 @@ tensorboard --logdir ./tf_summary/
 
 ### Inference and Selecting Threshold
 
-So far there we stated the existence of two thresholds: $T$ and $\alpha$. The first one is used to make the true class and the second (margin) to improve the construction of the face embedding space. These two values should be distinct because the margin $\alpha$ is merely a suggestion baked into the loss function, and there is no way to guarantee its strictness. It does not ensure that positive samples will fall into the hyper-sphere of radius $\alpha$ and all negative samples will be outside of it. Due to this, we need to come up with another threshold value to make a decision about the class of the current image, and this threshold will be $T$.
+So far there we stated the existence of two thresholds: $$T$$ and $$\alpha$$. The first one is used to make the true class and the second (margin) to improve the construction of the face embedding space. These two values should be distinct because the margin $$\alpha$$ is merely a suggestion baked into the loss function, and there is no way to guarantee its strictness. It does not ensure that positive samples will fall into the hyper-sphere of radius $$\alpha$$ and all negative samples will be outside of it. Due to this, we need to come up with another threshold value to make a decision about the class of the current image, and this threshold will be $$T$$.
 
-For inference, you need to compare two images and decide whether they are the same person or not. The decision should be made based on some threshold value. We selected the threshold of -0.8 based on the model performance after 500 epochs (assuming $R$ is defined the same way as in the section *Triplet Loss*). The actual threshold should be selected after the model was trained for hundreds of hours, the threshold is chosen with k-fold cross-validation or with a held-out dataset. 
+For inference, you need to compare two images and decide whether they are the same person or not. The decision should be made based on some threshold value. We selected the threshold of -0.8 based on the model performance after 500 epochs (assuming $$R$$ is defined the same way as in the section *Triplet Loss*). The actual threshold should be selected after the model was trained for hundreds of hours, the threshold is chosen with k-fold cross-validation or with a held-out dataset. 
 
 ## Data Description
 

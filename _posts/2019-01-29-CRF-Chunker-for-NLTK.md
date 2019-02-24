@@ -249,3 +249,177 @@ class CRFChunkParser(ChunkParserI):
 
 
 ## Comparing `RegexpParser`, `NEChunkParser` and `CRFChunkParser` for russian language
+
+### Only Noun Phrases
+
+#### `RegexpParser`
+
+Assume `RegexpParser` has simple grammar for detecting noun chunks
+
+```python
+from nltk import RegexpParser
+grammar = r"""
+NP:
+{<S.*|A.*>*<S.*>}  # Nouns and Adjectives, terminated with Nouns
+"""
+chunker = RegexpParser(grammar)
+```
+
+The performance of such chunker obrained with `chunker.evaluate()`
+
+```
+ChunkParse score:
+    IOB Accuracy:  82.9%%
+    Precision:     62.1%%
+    Recall:        43.7%%
+    F-Measure:     51.3%%
+```
+
+#### `CRFChunkParser` with `IOB` scheme
+
+```
+ChunkParse score:
+    IOB Accuracy:  95.5%%
+    Precision:     89.5%%
+    Recall:        90.2%%
+    F-Measure:     89.9%%
+```
+
+#### `CRFChunkParser` with `BILUO` scheme
+
+```
+ChunkParse score:
+    IOB Accuracy:  96.0%%
+    Precision:     91.9%%
+    Recall:        91.9%%
+    F-Measure:     91.9%%
+
+```
+
+### Full Chunker
+
+Full chunker groups tokens into noun, verb and prepositional chunks.
+
+#### `CRFChunkParser` with `BILUO` scheme and extra features
+
+The original set of features was a little off in a way that we often provided the whole word as a feature. Evidently, this will make it harder for the algorithm to generalize. Instead, we try to look on the prefix and suffix of the word to understand the dependencies between words. 
+
+```python
+def _feature_detector(self, tokens, index):
+    def shape(word):
+        if re.match('[0-9]+(\.[0-9]*)?|[0-9]*\.[0-9]+$', word, re.UNICODE):
+            return 'number'
+        elif re.match('\W+$', word, re.UNICODE):
+            return 'punct'
+        elif re.match('\w+$', word, re.UNICODE):
+            if word.istitle():
+                return 'upcase'
+            elif word.islower():
+                return 'downcase'
+            else:
+                return 'mixedcase'
+        else:
+            return 'other'
+
+
+    word = tokens[index][0]
+    pos = tokens[index][1]
+
+    if index == 0:
+        prevword = prevprevword = ""
+        prevpos = prevprevpos = ""
+        prevshape = ""
+    elif index == 1:
+        prevword = tokens[index - 1][0].lower()
+        prevprevword = ""
+        prevpos = tokens[index - 1][1]
+        prevprevpos = ""
+        prevshape = ""
+    else:
+        prevword = tokens[index - 1][0].lower()
+        prevprevword = tokens[index - 2][0].lower()
+        prevpos = tokens[index - 1][1]
+        prevprevpos = tokens[index - 2][1]
+        prevshape = shape(prevword)
+    if index == len(tokens) - 1:
+        nextword = nextnextword = ""
+        nextpos = nextnextpos = ""
+    elif index == len(tokens) - 2:
+        nextword = tokens[index + 1][0].lower()
+        nextpos = tokens[index + 1][1].lower()
+        nextnextword = ""
+        nextnextpos = ""
+    else:
+        nextword = tokens[index + 1][0].lower()
+        nextpos = tokens[index + 1][1].lower()
+        nextnextword = tokens[index + 2][0].lower()
+        nextnextpos = tokens[index + 2][1].lower()
+
+    def get_suffix_prefix(wordm, length):
+        if len(word)>length:
+            pref = word[:length].lower()
+            suf = word[-length:].lower()
+        else:
+            pref = word
+            suf = ""
+        return pref, suf
+
+    suf_pref_lengths = [2,3]
+    words = {
+        'word': {'w': word, 'pos': pos, 'shape': shape(word)},
+        'nword': {'w': nextword, 'pos': nextpos, 'shape': shape(nextword)},
+        'nnword': {'w': nextnextword, 'pos': nextnextpos, 'shape': shape(nextnextword)},
+        'pword': {'w': prevword, 'pos': prevpos, 'shape': shape(prevprevword)},
+        'ppword': {'w': prevprevword, 'pos': prevprevpos, 'shape': shape(prevprevword)}
+    }
+
+    base_features = {}
+    for word_position in words:
+        for item in words[word_position]:
+            if item == 'w': continue
+            base_features[word_position+"."+item] = words[word_position][item]
+
+    prefix_suffix_features = {}
+    for word_position in words:
+        for l in suf_pref_lengths:
+            feature_name_base = word_position+"."+repr(l)+"."
+            pref, suf = get_suffix_prefix(words[word_position]['w'], l)
+            prefix_suffix_features[feature_name_base+'pref'] = pref
+            prefix_suffix_features[feature_name_base+'suf'] = suf
+            prefix_suffix_features[feature_name_base+'pref.suf'] = '{}+{}'.format(pref, suf)
+            prefix_suffix_features[feature_name_base+'posfix'] = '{}+{}+{}'.format(pref, words[word_position]['pos'], suf)
+            prefix_suffix_features[feature_name_base+'shapefix'] = '{}+{}+{}'.format(pref, words[word_position]['shape'], suf)
+
+    features = {
+
+        'pos': pos,
+        'prevpos': prevpos,
+        'nextpos': nextpos,
+        'prevprevpos': prevprevpos,
+        'nextnextpos': nextnextpos,
+        
+        'pos+nextpos': '{0}+{1}'.format(pos, nextpos),
+        'pos+nextnextpos': '{0}+{1}'.format(pos, nextnextpos),
+        'pos+prevpos': '{0}+{1}'.format(pos, prevpos),
+        'pos+prevprevpos': '{0}+{1}'.format(pos, prevprevpos),
+    }
+
+    features.update(base_features)
+    features.update(prefix_suffix_features)
+
+    return features
+```
+
+Achieved performance is
+
+```
+ChunkParse score:
+    IOB Accuracy:  95.4%%
+    Precision:     93.5%%
+    Recall:        93.7%%
+    F-Measure:     93.6%%
+```
+
+## References
+
+https://github.com/scrapinghub/python-crfsuite/blob/master/examples/CoNLL%202002.ipynb
