@@ -2,7 +2,7 @@ version: "3"
 services:
   site:
     command: jekyll serve --watch
-    image: jekyll/jekyll:latest
+    image: jekyll/jekyll:3.7
     volumes:
       - $PWD:/srv/jekyll
       - $PWD/vendor/bundle:/usr/local/bundle
@@ -10,5 +10,5 @@ services:
       - 4000:4000
       - 35729:35729
       - 3000:3000
-      -   80:4000
+      -   80:8888
 
