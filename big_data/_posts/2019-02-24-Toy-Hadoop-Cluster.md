@@ -21,7 +21,7 @@ To complete this tutorial you need to install Vagrant virtualization software. V
 
 
 Create `Vagrantfile` with the following content (for mode information about `Vagrantfile` read previous post)
-```
+```ruby
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 BOX_PATH = 'hadoop_image.box'
@@ -349,7 +349,7 @@ Resource manager YARN usually runs on a dedicated machine. Since many of us are 
 The file responsible for YARN configuration is `yarn-site.xml`. More detailed information about the available options can be found in the [official documentation](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html).
 
 #### Resource Manager
-```
+```xml
 <configuration>
     <property>
             <name>yarn.resourcemanager.hostname</name>
@@ -364,7 +364,7 @@ As you can see, we are going to run the resource manager on the same machine as 
 #### MapReduce
 
 MapReduce has its own configuration file `mapred-site.xml`. Configure MapReduce framework
-```
+```xml
 <configuration>
     <property>
             <name>mapreduce.framework.name</name>

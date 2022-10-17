@@ -54,14 +54,14 @@ Create a where you want to store your VM and run configuration.
 
 Your VM is ready, and you can now ask Vagrant to start up a VM as configured by the default Vagrantfile:
 
-```
+```bash
   vagrant up 
 ```
 
 The VM is now running in Virtualbox. You can ssh into it (no password required)
 as follows: 
 
-```
+```bash
   vagrant ssh # ssh into the VM
 ```
 

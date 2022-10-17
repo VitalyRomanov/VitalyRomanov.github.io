@@ -1,10 +1,9 @@
 ---
 layout: post
 title: "Facial Recognition"
-date: "2019-02-21"
+categories: [machine-learning]
+date: "2019-02-13"
 description: ""
-category:
-  - Machine Learning
 tags:
   - Facial Recognition
 mathjax: true
@@ -246,7 +245,9 @@ You can help you model to learn better by gradually reducing the learning rate. 
 - Start with learning rate 0.0001
 - Reduce learning rate 0.999 times every epoch
 
-## Results
+
+The implementation can be found [on GitHub](https://github.com/VitalyRomanov/facial-recognition).
+
 
 # References
 - [FaceNet](https://arxiv.org/pdf/1503.03832.pdf)
