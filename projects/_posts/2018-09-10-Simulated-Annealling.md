@@ -3,7 +3,7 @@ layout: post
 title: Simulated Annealling
 categories: [optimization]
 tags: [stochastic optimization]
-description: "There is more than just gradient descent. Meet stochastic optimization."
+description: "Some choose in life should be made by sampling randomly."
 mathjax: true
 show_meta: true
 ---
@@ -12,13 +12,13 @@ show_meta: true
 
 ## Motivation
 
-SA is a stochastic global optimization algorithm. As many other randomized algorithms, SA appears to be surprisingly simple, yet efficient at achieving its task (given conditions). The name and inspiration for the algorithm come from metallurgy, where controlled heating and cooling of the material allows it to form larger crystalline structure and improve properties. A popular description of the method can be found on [Wikipedia page](https://en.wikipedia.org/wiki/Simulated_annealing).
+Simulated Annealing (SA) is a stochastic global optimization algorithm. As many other randomized algorithms, SA appears to be surprisingly simple, yet capable at achieving its goal (given conditions). The name and inspiration for the algorithm come from metallurgy, where controlled heating and cooling of the material allows it to form larger crystalline structure and improve properties. A popular description of the method can be found on its [Wikipedia page](https://en.wikipedia.org/wiki/Simulated_annealing).
 
 ## Algorithm
 
 ### Procedure
 
-The procedure for SA is very similar to the MH algorithm
+The procedure for SA is very similar to the Metropolis-Hastings (MH) algorithm
 
 1. Sample initial $$\mathbf{x}_0$$, set time step $$t=0$$
 2. Set initial temperature $$T$$
@@ -35,7 +35,7 @@ The description and details of every step are given further.
 ### Metallurgy Analogy
 
 > When the solid is heated, its molecules start moving randomly, and its energy increases. If the subsequent process of cooling is slow, the energy of the solid decreases slowly, but there are also random increases in the energy governed by the Boltzmann distribution. If the cooling is slow enough and deep enough to unstress the solid, the system will eventually settle down to the lowest energy state where all the molecules are arranged to have minimal potential energy.
- 
+
 The terms in SA are borrowed from the field of metallurgy. The optimization problem (minimization or maximization) is treated as a *system*. We want it to achieve a stable state with the least of *energy* (determined by cost function). This is achieved by heating the system up (increasing the variance of sampling), and then gradually *cooling it down*. This metallurgical process is merely an abstraction, and the actual optimization relies on sampling from an artificially designed probability distribution that peaks around global optimum. The way to construct this probability distribution is described further.
 
 ### Energy Distribution
