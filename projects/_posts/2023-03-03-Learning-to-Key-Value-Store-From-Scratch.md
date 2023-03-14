@@ -43,7 +43,7 @@ storage.commit()
 
 ![](/assets/img/figures/nhkv/iteration2.png)
 
-This seems that performance decreases rapidly when entry size becomes large. Need to test additional methods.
+It seems that performance decreases rapidly when entry size becomes large. Need to test additional methods.
 
 ## Iteration 3
 
@@ -69,7 +69,7 @@ While there is some improvement, there is still a drop in performance for long e
 
 ## Iteration 4
 
-It seems that a fast on-disk key-value storage is not a low-hanging fruit. But there is still a chance. `mmap` object allows accessing information stored on disk efficiently. It acts as a file that one can write into, but also access different locations in that file using indexing. The core idea is to write new objects into `mmap` and keep track of the locations where these objects were written. The most primitive implementation will have the following form
+It seems that a fast on-disk key-value storage is not a low-hanging fruit. But there is still a chance. `mmap` allows accessing information stored on disk efficiently. It acts as a file that one can write into, but also access different locations in that file using index. The core idea is to write new objects into the file, keep track of the locations where these objects were written, and then access those objects using `mmap`. The most primitive implementation has the following form
 
 ```python
 from mmap import mmap
@@ -84,7 +84,7 @@ entry_index = {}
 for ind, text in enumerate(dataset):
     serialized = text.encode("utf-8")  # encode string into bytes
     position = file_backing.tell()  # get current position in the file
-    written = file_backing.write(serialized)  # write into mmap
+    written = file_backing.write(serialized)  # write into file
     entry_index[ind] = entry_location(position=position, length=written)  # store into index
 file_backing.close()
 
@@ -101,11 +101,11 @@ file_backing.close()
 
 ![](/assets/img/figures/nhkv/iteration4.png)
 
-In the best traditions, we have an append-only data storage. When new entries are added, instead of overwriting the old data, the location in the index is overwritten. Need to do vacuuming once in a while if data is frequently overwritten. There is a significant improvement during reads for large entries (at the expense of writes). However, now there is a new problem. The position for entries inside `mmap` are stored in a dictionary. Its size will be considerable when many entries added into the storage. Need to keep the index on disk as well.
+In the best traditions, we have an append-only data storage. When new entries are added, instead of overwriting the old data, the location in the index is overwritten. Need to do vacuuming once in a while if data is frequently overwritten. There is a significant improvement during reads for large entries (at the expense of writing time). However, now there is a new problem. The position for entries inside `mmap` are stored in a dictionary. Its size will be considerable when many entries are added into the storage. Need to store the index on the disk as well.
 
 ## Iteration 5
 
-SQLite already proved to be quite efficient when the entry size is small. Fortunately, only two numbers are used to describe positions. After combining implementations from Iteration3 and Iteration4, I have obtained the following results
+SQLite already proved to be quite efficient when the entry size is small. Fortunately, only two numbers are used to describe entry positions in the `mmap` file. After combining implementations from Iteration3 and Iteration4, I have obtained the following results
 
 ![](/assets/img/figures/nhkv/iteration5.png)
 
@@ -116,8 +116,8 @@ Despite some additional overhead, the read performance is not that bad, while me
 Besides basic functionality, I believe the following features should be implemented:
 1. Automatic switching between read and write modes
 2. Iterating over keys and values
-3. Loading and saving procedures
-4. Possibility of using custom serializer
+3. Loading and saving procedures (for supporting structures)
+4. Possibility of using a custom serializer
 5. Automatic sharding (for file systems with 4gb limit for file, and possibly for multiprocessing access)
 6. Automatic management of context, since probably only one instance of the same storage should be opened for write at once
 7. Vacuuming

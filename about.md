@@ -10,6 +10,4 @@ My name is Vitaly Romanov and currently I am a researcher at Innopolis Universit
 
 In this blog I try to keep record of some of my activities, primarily for my sake, but maybe someone will find some use of it as well. 
 
-For more professional information refer to [CV]().
-
-*[FLIP]: First-Last-Invert-Play. A coding technique to achieve performant page transition animations.
+For more professional information refer to [CV](assets/20230314.CV.pdf).
