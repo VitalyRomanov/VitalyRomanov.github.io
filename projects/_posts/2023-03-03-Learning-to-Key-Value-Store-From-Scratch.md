@@ -120,10 +120,14 @@ Besides basic functionality, I believe the following features should be implemen
 4. Possibility of using a custom serializer
 5. Automatic sharding (for file systems with 4gb limit for file, and possibly for multiprocessing access)
 6. Automatic management of context, since probably only one instance of the same storage should be opened for write at once
-7. Vacuuming
+7. Vacuuming (pending)
 
 The features listed above were implemented in [nhkv](https://github.com/VitalyRomanov/nhkv) package.
 
 ## Alternatives
 
 I'm sure there are better crafted tools for this. A brief search reveals a [bunch of them](https://github.com/grantjenks/python-diskcache/issues/82). For my own use case, the reading time of `mmap` backed storage does not seem to be a bottleneck. And frankly speaking, for accessing datasets, reading is more crucial than writing.
+
+I have also compared the results with LevelDB and RocksDB. These are two serverless key-value stores. They allow to achieve better performance even for larger entry sizes. However, they require installing additional dependencies. An option to use them is implemented in `nhkv` library (see [readme](https://github.com/VitalyRomanov/nhkv)).
+
+![](/assets/img/figures/nhkv/compareall.png)
